@@ -68,9 +68,17 @@ Die `vercel.json` routet:
 - `/example.html` und `/example` → öffentliche Demo-Seite
 - Alles andere → FastAPI-App (`api/index.py`)
 
-> **Hinweis:** `POST /jobs/refresh` schreibt auf das Dateisystem und funktioniert
-> auf Vercel nur eingeschränkt (read-only FS). Für produktive Nutzung: Job lokal
-> ausführen und `data/quellen_merged.json` + `data/quellen_stats.json` mit deployen.
+> **Vercel-Besonderheiten:**
+> - Das Dateisystem ist read-only. Die API schreibt automatisch nach `/tmp/data/`
+>   und kopiert beim Cold-Start vorhandene Dateien (z.B. `quellen_korrektur.csv`)
+>   aus dem Deploy-Bundle dorthin.
+> - Hintergrund-Threads werden nach der Response beendet. Daher erkennt die API
+>   die Umgebungsvariable `VERCEL` und führt `POST /jobs/refresh` automatisch
+>   **synchron** aus (blockierend, Response erst nach Abschluss).
+> - `maxDuration` ist auf 300s gesetzt (erfordert **Pro-Plan**; Hobby: max 60s).
+> - `/tmp/` wird bei jedem Cold-Start geleert. Für dauerhaft verfügbare Daten:
+>   Job lokal ausführen und `data/quellen_merged.json` + `data/quellen_stats.json`
+>   mit deployen.
 
 **Produktions-URL:** `https://wlo-quellenliste-api.vercel.app`
 

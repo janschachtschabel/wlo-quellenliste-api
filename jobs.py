@@ -13,6 +13,8 @@ damit der aktuelle Job nach einem Neustart sichtbar bleibt.
 
 import json
 import logging
+import os
+import shutil
 import threading
 import traceback
 import uuid
@@ -27,11 +29,24 @@ import stats as stats_mod
 log = logging.getLogger(__name__)
 
 # ---------------------------------------------------------------------------
-# Pfade
+# Pfade – auf Vercel ist das FS read-only; /tmp/ ist beschreibbar.
 # ---------------------------------------------------------------------------
 
-DATA_DIR = Path(__file__).parent / "data"
-DATA_DIR.mkdir(exist_ok=True)
+_DEPLOY_DATA = Path(__file__).parent / "data"
+
+if os.environ.get("VERCEL"):
+    DATA_DIR = Path("/tmp/data")
+    DATA_DIR.mkdir(parents=True, exist_ok=True)
+    # Beim Cold-Start: vorhandene Dateien aus dem Deploy-Bundle nach /tmp kopieren
+    if _DEPLOY_DATA.is_dir():
+        for src_file in _DEPLOY_DATA.iterdir():
+            dst = DATA_DIR / src_file.name
+            if not dst.exists():
+                shutil.copy2(src_file, dst)
+                log.info("Vercel cold-start: %s → %s", src_file.name, dst)
+else:
+    DATA_DIR = _DEPLOY_DATA
+    DATA_DIR.mkdir(exist_ok=True)
 
 MERGED_FILE     = DATA_DIR / "quellen_merged.json"
 STATS_FILE      = DATA_DIR / "quellen_stats.json"
@@ -328,13 +343,24 @@ def _run_job(job: Job) -> None:
         job.update("error", str(exc), error=tb)
 
 
-def start_job() -> Job:
-    """Startet einen neuen Refresh-Job im Hintergrund-Thread."""
+def start_job(sync: bool = False) -> Job:
+    """Startet einen neuen Refresh-Job.
+
+    Args:
+        sync: ``True`` = Job blockierend im aktuellen Thread ausführen
+              (nötig auf Vercel, wo Hintergrund-Threads nach der Response
+              beendet werden).  ``False`` (Default) = Hintergrund-Thread.
+    """
     job = Job()
     with _lock:
         _jobs[job.id] = job
     _save_jobs()
-    t = threading.Thread(target=_run_job, args=(job,), daemon=True)
-    t.start()
-    log.info("Job %s gestartet", job.id)
+
+    if sync:
+        log.info("Job %s gestartet (synchron)", job.id)
+        _run_job(job)
+    else:
+        t = threading.Thread(target=_run_job, args=(job,), daemon=True)
+        t.start()
+        log.info("Job %s gestartet (async)", job.id)
     return job

@@ -26,6 +26,7 @@ import csv
 import io
 import json
 import logging
+import os
 from typing import Annotated
 
 from pathlib import Path
@@ -230,31 +231,43 @@ def _build_csv(records: list[dict], skip: int, limit: int,
     "/jobs/refresh",
     summary="Neuen Daten-Refresh starten",
     tags=["Jobs"],
-    response_description="Job-ID und initialer Status",
+    response_description="Job-ID und Status (bei sync=true: Endergebnis)",
 )
-def start_refresh():
+def start_refresh(
+    sync: bool = Query(
+        False,
+        description=(
+            "`true` = Job blockierend ausführen (Response erst nach Abschluss). "
+            "**Nötig auf Vercel**, da Hintergrund-Threads nach der Response beendet werden. "
+            "Wird automatisch auf `true` gesetzt wenn die Umgebungsvariable `VERCEL` erkannt wird."
+        ),
+    ),
+):
     """
-    Startet einen asynchronen Datenabruf- und Merge-Job im Hintergrund.
+    Startet einen Datenabruf- und Merge-Job.
 
-    Der Job läuft in einem eigenen Thread und durchläuft folgende Phasen:
+    **Modi:**
+    - `sync=false` (Default lokal): Job läuft im Hintergrund-Thread.
+      Fortschritt per `GET /jobs/latest` pollen.
+    - `sync=true` (Default auf Vercel): Job läuft blockierend.
+      Response enthält direkt das Endergebnis.
+
+    **Phasen:**
 
     | Status | Beschreibung |
-    |--------|--------------|
+    |--------|---------------|
     | `pending` | Wartet auf Start |
-    | `fetching_quellen` | Quelldatensätze werden seitenweise abgerufen (zeigt Fortschritt) |
-    | `fetching_facets` | Bezugsquellen-Facetten werden abgerufen (1 API-Call) |
+    | `fetching_quellen` | Quelldatensätze werden seitenweise abgerufen |
+    | `fetching_facets` | Bezugsquellen-Facetten werden abgerufen |
     | `merging` | Datenzusammenführung, Primär-Markierung, Statistiken |
     | `done` | Fertig – Daten abrufbar |
     | `error` | Fehler – `error`-Feld enthält Stacktrace |
-
-    **Tipp:** Fortschritt per `GET /jobs/latest` oder `GET /jobs/{jobId}` pollen.
-
-    **Antwort-Beispiel:**
-    ```json
-    { "jobId": "3fa85f64-5717-4562-b3fc-2c963f66afa6", "status": "pending" }
-    ```
     """
-    job = jobs_mod.start_job()
+    # Auf Vercel automatisch synchron laufen lassen
+    is_vercel = bool(os.environ.get("VERCEL"))
+    run_sync = sync or is_vercel
+
+    job = jobs_mod.start_job(sync=run_sync)
     return {"jobId": job.id, "status": job.status}
 
 
