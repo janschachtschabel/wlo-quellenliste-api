@@ -47,8 +47,10 @@ def _parse_quality_score(raw, *, invert: bool = False, zero_good: bool = False) 
         n = float(s)
         if invert:
             # Binary 0/1: 0 = good, 1 = bad
-            if n == 0: return 1.0
-            if n == 1: return 0.2
+            if n == 0:
+                return 1.0
+            if n == 1:
+                return 0.2
             return None
         if zero_good and n == 0:
             return 1.0               # 0 = "Nein - unauffällig" = gut
@@ -220,14 +222,22 @@ def compute(records: list[dict]) -> dict:
     BRACKET_ORDER = ["0", "1–4", "5–9", "10–49", "50–99", "100–499", "500–999", "1k–9.9k", "≥10k"]
 
     def bracket(n: int) -> str:
-        if n == 0:     return "0"
-        if n < 5:      return "1–4"
-        if n < 10:     return "5–9"
-        if n < 50:     return "10–49"
-        if n < 100:    return "50–99"
-        if n < 500:    return "100–499"
-        if n < 1000:   return "500–999"
-        if n < 10000:  return "1k–9.9k"
+        if n == 0:
+            return "0"
+        if n < 5:
+            return "1–4"
+        if n < 10:
+            return "5–9"
+        if n < 50:
+            return "10–49"
+        if n < 100:
+            return "50–99"
+        if n < 500:
+            return "100–499"
+        if n < 1000:
+            return "500–999"
+        if n < 10000:
+            return "1k–9.9k"
         return "≥10k"
 
     content_dist: Counter = Counter()

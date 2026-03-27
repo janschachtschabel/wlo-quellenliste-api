@@ -643,9 +643,9 @@ def merge(
             if (r.get("publisher") or "").strip() != pub:
                 continue
             if r["matchStage"] == 1:
-                _add_flag(r, f"KORREKTUR_ABWEICHUNG")
+                _add_flag(r, "KORREKTUR_ABWEICHUNG")
             else:
-                _add_flag(r, f"PUB_INKONSISTENT")
+                _add_flag(r, "PUB_INKONSISTENT")
 
     # ── Cleanup Hilfsfelder ───────────────────────────────────────────────
     for r in work:

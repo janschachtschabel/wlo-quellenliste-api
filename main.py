@@ -20,25 +20,24 @@ Endpoints:
   GET    /correction-list           Aktuelle Korrekturtabelle herunterladen
   POST   /correction-list           Neue Korrekturtabelle hochladen (CSV)
   GET    /correction-list/template  Leere Vorlage herunterladen
+
+  GET    /wc/info                   Webkomponente: Einbettungs-Infos, Dateien, Attribute
 """
 
 import csv
 import io
-import json
 import logging
 import os
-from typing import Annotated
 
 from pathlib import Path
 
-from fastapi import BackgroundTasks, FastAPI, File, HTTPException, Query, UploadFile
+from fastapi import FastAPI, File, HTTPException, Query, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 import jobs as jobs_mod
 import merger as merger_mod
-import stats as stats_mod
 
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s %(levelname)s %(name)s: %(message)s")
@@ -51,8 +50,12 @@ log = logging.getLogger(__name__)
 DESCRIPTION = """
 ## WLO Quellenverzeichnis API
 
-Backend für die `<wlo-source-list>` Webkomponente. Ruft Quellendaten von der
-WLO-Produktion ab, führt sie zusammen und liefert sie gefiltert als CSV oder JSON aus.
+Backend für die **`<wlo-sources>`** Webkomponente (Angular 18 Custom Element).
+Ruft Quellendaten von der WLO-Produktion ab, führt sie über eine 7-stufige
+Matching-Kaskade zusammen und liefert sie gefiltert als JSON oder CSV aus.
+
+Die API bündelt außerdem die **vorkompilierte Webkomponente** unter `/wc/`,
+sodass sie per `<script>`-Tag in beliebige Webseiten eingebettet werden kann.
 
 ### Typischer Ablauf
 
@@ -61,6 +64,7 @@ WLO-Produktion ab, führt sie zusammen und liefert sie gefiltert als CSV oder JS
 3. **`GET /data/sources`** – Gefilterte Quellenliste abrufen
 4. **`GET /data/stats`** – Statistiken für UI-Charts
 5. **`GET /data/export/csv`** – Gesamtexport für Offline-Analyse
+6. **`GET /wc/info`** – Einbettungs-Infos für die Webkomponente
 
 ### Datenquellen
 
@@ -116,6 +120,14 @@ app = FastAPI(
                            "Bei gesetzter `Node-Id` werden Metadaten automatisch von WLO abgerufen. "
                            "`Spider=1` gibt der Quelle Vorrang bei Duplikaten. "
                            "`Liste=whitelist` = bevorzugter primärer Datensatz; `Liste=blacklist` = bekanntes Duplikat, wird nie primär.",
+        },
+        {
+            "name": "Webkomponente",
+            "description": "Die API liefert unter `/wc/` eine **vorkompilierte Angular-Webkomponente** "
+                           "(`<wlo-sources>`) aus. Die drei Dateien (`main.js`, `polyfills.js`, `styles.css`) "
+                           "können per `<script>`-Tag in beliebige Webseiten eingebettet werden – CORS ist "
+                           "freigeschaltet (`Access-Control-Allow-Origin: *`). "
+                           "Unter `/wc/info` gibt es Einbettungs-Infos, Dateigrößen und eine Attribut-Referenz.",
         },
     ],
 )
@@ -1049,13 +1061,123 @@ def correction_list_template():
 
 
 # ---------------------------------------------------------------------------
+# Routen: Webkomponente
+# ---------------------------------------------------------------------------
+
+_PUBLIC_DIR = Path(__file__).parent / "public"
+_WC_DIR     = _PUBLIC_DIR / "wc"
+
+_WC_FILES = ["main.js", "polyfills.js", "styles.css"]
+
+_WC_ATTRIBUTES = [
+    {"name": "api-base",        "type": "string", "default": '""',      "description": "URL der API. Pflicht bei externer Einbettung (leer = gleicher Origin)."},
+    {"name": "view",            "type": "string", "default": '"tile"',   "description": "Startansicht: tile (Kacheln) · list (Tabelle) · stats (Statistiken)."},
+    {"name": "min-count",       "type": "number", "default": "5",       "description": "Nur Quellen mit mindestens N Inhalten anzeigen (0 = alle)."},
+    {"name": "csv-url",         "type": "string", "default": '""',      "description": "URL zu einer externen CSV-Datenquelle (optional, überschreibt API-Daten)."},
+    {"name": "primary-color",   "type": "color",  "default": "#003b7c", "description": "Hauptfarbe (Header, Badges, Buttons)."},
+    {"name": "secondary-color", "type": "color",  "default": "#002d5f", "description": "Sekundärfarbe."},
+    {"name": "accent-color",    "type": "color",  "default": "#f97316", "description": "Akzentfarbe (Highlights, Hover)."},
+    {"name": "bg-color",        "type": "color",  "default": "#f4f7fc", "description": "Hintergrundfarbe der Komponente."},
+    {"name": "card-bg",         "type": "color",  "default": "#ffffff", "description": "Hintergrundfarbe der Kacheln/Karten."},
+    {"name": "text-color",      "type": "color",  "default": "#12213a", "description": "Textfarbe."},
+]
+
+
+def _wc_file_info(base_url: str) -> list[dict]:
+    """Dateigrößen der WC-Dateien ermitteln."""
+    infos = []
+    for name in _WC_FILES:
+        path = _WC_DIR / name
+        size_bytes = path.stat().st_size if path.exists() else 0
+        size_kb    = round(size_bytes / 1024, 1)
+        infos.append({
+            "file": name,
+            "url":  f"{base_url}/wc/{name}",
+            "sizeBytes": size_bytes,
+            "sizeKB":    size_kb,
+        })
+    return infos
+
+
+@app.get(
+    "/wc/info",
+    summary="Webkomponente – Einbettungs-Infos und Attribut-Referenz",
+    tags=["Webkomponente"],
+    response_description="JSON mit Dateien, Einbettungs-Snippet, Attributen und Beispiel-URL",
+)
+def wc_info(
+    base_url: str = Query(
+        "",
+        description=(
+            "Basis-URL der API für die generierten Snippets "
+            "(z.B. `https://wlo-quellenliste-api.vercel.app`). "
+            "Leer = relative Pfade."
+        ),
+    ),
+):
+    """
+    Gibt alle Informationen zurück, die zum Einbetten der **`<wlo-sources>`**
+    Webkomponente benötigt werden:
+
+    - **files**: Liste der drei Dateien (`main.js`, `polyfills.js`, `styles.css`)
+      mit URLs und Dateigrößen
+    - **snippet**: Copy-paste-fähiges HTML-Snippet
+    - **attributes**: Vollständige Attribut-Referenz mit Typ, Default und Beschreibung
+    - **exampleUrl**: Link zur interaktiven Demo-Seite
+    - **tag**: HTML-Tag-Name der Webkomponente
+
+    **Beispiel-Aufruf:**
+    ```
+    GET /wc/info?base_url=https://wlo-quellenliste-api.vercel.app
+    ```
+    """
+    base = base_url.rstrip("/") if base_url else ""
+    files = _wc_file_info(base)
+
+    snippet = (
+        f'<script src="{base}/wc/polyfills.js"></script>\n'
+        f'<script src="{base}/wc/main.js"></script>\n'
+        f'<link rel="stylesheet" href="{base}/wc/styles.css">\n\n'
+        f'<wlo-sources api-base="{base}"></wlo-sources>'
+    )
+
+    snippet_full = (
+        '<!DOCTYPE html>\n'
+        '<html lang="de">\n'
+        '<head>\n'
+        '  <meta charset="UTF-8">\n'
+        '  <meta name="viewport" content="width=device-width, initial-scale=1.0">\n'
+        '  <title>WLO Quellenverzeichnis</title>\n'
+        f'  <script src="{base}/wc/polyfills.js"></script>\n'
+        f'  <script src="{base}/wc/main.js"></script>\n'
+        f'  <link rel="stylesheet" href="{base}/wc/styles.css">\n'
+        '</head>\n'
+        '<body>\n'
+        f'  <wlo-sources api-base="{base}"></wlo-sources>\n'
+        '</body>\n'
+        '</html>'
+    )
+
+    example_url = f"{base}/example.html" if base else "/public/example.html"
+
+    return {
+        "tag": "wlo-sources",
+        "files": files,
+        "snippet": snippet,
+        "snippetFullHtml": snippet_full,
+        "attributes": _WC_ATTRIBUTES,
+        "exampleUrl": example_url,
+        "cors": "Access-Control-Allow-Origin: * (alle Dateien unter /wc/)",
+    }
+
+
+# ---------------------------------------------------------------------------
 # Statische Dateien (Webkomponente + Example-Seite)
 # ---------------------------------------------------------------------------
 # Muss NACH allen API-Routen montiert werden, damit API-Pfade Vorrang haben.
 # Auf Vercel werden statische Dateien über vercel.json geroutet;
 # dieser Mount dient der lokalen Entwicklung mit uvicorn.
 
-_PUBLIC_DIR = Path(__file__).parent / "public"
 if _PUBLIC_DIR.is_dir():
     app.mount("/wc", StaticFiles(directory=_PUBLIC_DIR / "wc"), name="wc")
     app.mount("/public", StaticFiles(directory=_PUBLIC_DIR, html=True), name="public")

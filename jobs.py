@@ -82,7 +82,7 @@ class Job:
         self.steps:    list[dict] = []   # Schritthistorie
 
     def _elapsed(self) -> float:
-        from datetime import datetime, timezone
+        from datetime import datetime
         try:
             t0 = datetime.fromisoformat(self.created)
             t1 = datetime.fromisoformat(self.updated)
@@ -302,7 +302,7 @@ def _run_job(job: Job) -> None:
 
         # ── Stufe 3d: Metadaten-Anreicherung für Top-Facets-only ────────
         job.update("enriching", "Reichere Top-Quellen mit Metadaten an …")
-        enriched_count = fetcher.enrich_facets_only(
+        fetcher.enrich_facets_only(
             merged_raw, min_count=5, max_enrich=500,
             progress_cb=lambda done, total: job.update(
                 "enriching", f"Metadaten: {done}/{total} …"
