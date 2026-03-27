@@ -31,9 +31,10 @@ import os
 
 from pathlib import Path
 
-from fastapi import FastAPI, File, HTTPException, Query, UploadFile
+import requests as http_requests
+from fastapi import FastAPI, File, HTTPException, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import JSONResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 
 import jobs as jobs_mod
@@ -144,6 +145,58 @@ app.add_middleware(
 def _startup():
     jobs_mod.load_jobs_from_disk()
     log.info("API gestartet.")
+
+
+# ---------------------------------------------------------------------------
+# Reverse-Proxy: edu-sharing API
+# ---------------------------------------------------------------------------
+# Leitet /edu-sharing/rest/* an https://redaktion.openeduhub.net weiter.
+# Dadurch kann die eingebettete Webkomponente ohne CORS-Probleme auf die
+# edu-sharing-Suche zugreifen – sowohl lokal als auch auf Vercel.
+
+_EDU_SHARING_ORIGIN = "https://redaktion.openeduhub.net"
+
+
+@app.api_route(
+    "/edu-sharing/{path:path}",
+    methods=["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    include_in_schema=False,
+)
+async def _edu_sharing_proxy(path: str, request: Request):
+    target = f"{_EDU_SHARING_ORIGIN}/edu-sharing/{path}"
+    qs = str(request.query_params)
+    if qs:
+        target += f"?{qs}"
+
+    headers = {
+        k: v for k, v in request.headers.items()
+        if k.lower() not in ("host", "connection", "content-length", "transfer-encoding")
+    }
+
+    body = await request.body()
+    try:
+        resp = http_requests.request(
+            method=request.method,
+            url=target,
+            headers=headers,
+            data=body if body else None,
+            timeout=30,
+            allow_redirects=False,
+        )
+    except http_requests.RequestException as exc:
+        raise HTTPException(status_code=502, detail=str(exc))
+
+    excluded = {"content-encoding", "transfer-encoding", "connection", "content-length"}
+    resp_headers = {
+        k: v for k, v in resp.headers.items()
+        if k.lower() not in excluded
+    }
+
+    return Response(
+        content=resp.content,
+        status_code=resp.status_code,
+        headers=resp_headers,
+    )
 
 
 # ---------------------------------------------------------------------------

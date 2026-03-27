@@ -329,7 +329,7 @@ c7aaf894-3c70-40bc-9dfa-9b071ca88ef7;Welt der Physik;https://www.weltderphysik.d
 1333299d-21e1-4e99-8c2e-81e0c1a85fe2;Werkzeugkoffer «Making in der Schule» – IQES;https://www.iqesonline.net/bildung-digital/unterrichtspraxis-erfahrungsberichte-lernumgebungen/werkzeugkoffer-making-in-der-schule/;;;blacklist
 6a961640-140c-4fb1-b3b7-2fa6e44cce6c;WirLernenOnline – Deutsch Digital;https://deutsch-digital.eu/?page_id=533;;;blacklist
 7654e9a1-dab6-4345-9aa0-e59c74b0b7aa;ZUM Deutsch Lernen;https://deutsch-lernen.zum.de/wiki/Hauptseite;;;blacklist
-542b2014-68f9-49e8-bf88-2d29f1652593;ZUM-Apps | ZUM.de;https://apps.zum.de/;;;blacklist
+542b2014-68f9-49e8-bf88-2d29f1652593;ZUM-Apps | ZUM.de;https://apps.zum.de/;ZUM-Apps;;whitelist
 085ab90e-e498-4b63-9025-d75176bd36ff;ZUM-Unterrichten | Deutsch;https://unterrichten.zum.de/wiki/Deutsch;;;blacklist
 1a348b3e-c9b9-42d6-bf1b-aa2891d80584;Zeitgemäße Bildung | Wir lernen online;https://wirlernenonline.de/portal/allgemein-zeitgemasse-methoden/;;;blacklist
 557fb059-47de-43e5-a7aa-8ca39c6b4c4b;Ziele für Nachhaltige Entwicklung - Agenda 2030 der UN;https://17ziele.de/;;;blacklist
@@ -347,3 +347,8 @@ c148cd83-98c2-4b00-88cd-8398c2fb00ff;OER Commons;;OER Commons;;whitelist
 c4d2838c-a9f9-4cf0-9283-8ca9f9ccf04a;ComeIn – Communities of Practice NRW für eine Innovative Lehrerbildung;;ComeIn;;whitelist
 7abe4a93-58f3-4029-be4a-9358f380290b;Deutsche Welle - Kostenlos online Deutsch lernen;;Deutsche Welle;;whitelist
 b490865f-e0d5-4252-9086-5fe0d5c2528b;Youtube;;Youtube;;whitelist
+dbbb71f0-d7a5-439b-8508-660a9b1166f3;Schubert, Franz: Übungen zur Liedanalyse (1);;OERSI;;blacklist
+168c1b50-37b9-4904-a53c-eb1465b17081;Schule im Aufbruch;;Schule im Aufbruch;;whitelist
+26c33c74-d35a-4eb9-833c-74d35a4eb96c;Coding for Tomorrow;;Coding for Tomorrow;;whitelist
+9a4a4b80-97a9-4b39-9c9b-66712dcff6cb;Ecole Science bei YouTube;;Ecole Science;;whitelist
+

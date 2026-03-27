@@ -1259,34 +1259,87 @@
         "at": "2026-03-26T21:51:01.500390+00:00"
       }
     ],
+    "resultSummary": {}
+  },
+  "7c9c6342-9128-4ca0-80e7-c3ecc06c732b": {
+    "id": "7c9c6342-9128-4ca0-80e7-c3ecc06c732b",
+    "status": "done",
+    "statusLabel": "Fertig",
+    "message": "Fertig",
+    "progress": {
+      "fetched": 1329,
+      "total": 1329
+    },
+    "elapsedSeconds": 535.4,
+    "created": "2026-03-27T09:38:27.156336+00:00",
+    "updated": "2026-03-27T09:47:22.554077+00:00",
+    "error": null,
+    "steps": [
+      {
+        "status": "fetching_quellen",
+        "label": "Quelldatensätze werden abgerufen …",
+        "message": "Rufe Quelldatensätze ab …",
+        "at": "2026-03-27T09:38:27.166621+00:00"
+      },
+      {
+        "status": "fetching_facets",
+        "label": "Bezugsquellen-Facetten werden abgerufen …",
+        "message": "Rufe Bezugsquellen-Facetten ab …",
+        "at": "2026-03-27T09:39:05.516850+00:00"
+      },
+      {
+        "status": "merging",
+        "label": "Daten werden zusammengeführt …",
+        "message": "Entferne API-Artefakt-Dubletten (gleiche nodeId) …",
+        "at": "2026-03-27T09:39:06.233455+00:00"
+      },
+      {
+        "status": "enriching",
+        "label": "enriching",
+        "message": "Reichere Top-Quellen mit Metadaten an …",
+        "at": "2026-03-27T09:44:38.276354+00:00"
+      },
+      {
+        "status": "merging",
+        "label": "Daten werden zusammengeführt …",
+        "message": "Primär-Markierung läuft …",
+        "at": "2026-03-27T09:47:22.004355+00:00"
+      },
+      {
+        "status": "done",
+        "label": "Fertig",
+        "message": "Fertig",
+        "at": "2026-03-27T09:47:22.554077+00:00"
+      }
+    ],
     "resultSummary": {
-      "total": 3982,
+      "total": 3960,
       "primaryRecords": 3350,
-      "secondaryRecords": 632,
-      "withNodeId": 1116,
-      "facetsOnly": 2866,
-      "nodeDuplicatesRemoved": 212,
-      "blacklistRemoved": 54,
+      "secondaryRecords": 610,
+      "withNodeId": 1070,
+      "facetsOnly": 2890,
+      "nodeDuplicatesRemoved": 258,
+      "blacklistRemoved": 56,
       "matchReport": {
-        "total": 3982,
+        "total": 3960,
         "primaryRecords": 3350,
-        "secondaryRecords": 632,
-        "withNodeId": 1116,
-        "facetsOnly": 2866,
+        "secondaryRecords": 610,
+        "withNodeId": 1070,
+        "facetsOnly": 2890,
         "unmatched": 0,
         "byStage": {
-          "2": 726,
-          "5": 293,
-          "1": 93,
+          "2": 696,
+          "5": 274,
+          "1": 96,
           "3": 4,
-          "7": 2866
+          "7": 2890
         },
         "byConfidence": {
-          "HIGH": 3723,
-          "MEDIUM": 259
+          "HIGH": 3713,
+          "MEDIUM": 247
         }
       },
-      "generated": "2026-03-26T21:51:01.500390+00:00"
+      "generated": "2026-03-27T09:47:22.554077+00:00"
     }
   }
 }
