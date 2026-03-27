@@ -149,6 +149,14 @@ def compute(records: list[dict]) -> dict:
     Erwartet die Ausgabe von merger.merge().
     Gibt ein strukturiertes Statistik-Dict zurück.
     """
+    # Deduplicate by name: keep best (isPrimary) record per unique name
+    _seen: dict[str, dict] = {}
+    for r in records:
+        key = (r.get("name") or "").strip().lower()
+        if key not in _seen or (not _seen[key].get("isPrimary") and r.get("isPrimary")):
+            _seen[key] = r
+    records = list(_seen.values())
+
     total = len(records)
     if total == 0:
         return {"total": 0}

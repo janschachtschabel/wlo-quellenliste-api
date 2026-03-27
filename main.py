@@ -779,6 +779,15 @@ def get_sources(
 
     if primary_only:
         records = [r for r in records if r.get("isPrimary", True)]
+    else:
+        # Deduplicate by name: keep best record per unique name
+        # (isPrimary ones first, then by insertion order from merger)
+        seen: dict[str, dict] = {}
+        for r in records:
+            key = (r.get("name") or "").strip().lower()
+            if key not in seen or (not seen[key].get("isPrimary") and r.get("isPrimary")):
+                seen[key] = r
+        records = list(seen.values())
 
     filtered = _apply_filters(records, q, subject, level, oer, spider, has_node, min_count)
 
