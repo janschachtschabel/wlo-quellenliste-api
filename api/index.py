@@ -19,3 +19,5 @@ _project_root = str(Path(__file__).resolve().parent.parent)
 if _project_root not in sys.path:
     sys.path.insert(0, _project_root)
 
+from main import app  # noqa: F401, E402 — Vercel erkennt die ASGI-App über diesen Import
+
