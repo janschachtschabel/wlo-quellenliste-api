@@ -49,6 +49,12 @@ DOMAIN_NOISE = frozenset({
     "uk", "io", "gov", "nz", "tv", "www", "https", "http", "co", "int",
 })
 
+# Publisher, die bei einer Datenmigration fehlerhaft in ccm:oeh_publisher_combined
+# eingetragen wurden und als Bezugsquelle / Facette ignoriert werden müssen.
+_IGNORED_PUBLISHERS = frozenset({
+    "wirlernenonline",
+})
+
 # Plattform-Domains: Hosting-Systeme, die NICHT als Quell-Domain taugen
 _PLATFORM_DOMAINS = frozenset({
     "redaktion.openeduhub.net",
@@ -272,7 +278,7 @@ def merge(
     facets_map: dict[str, int] = {}        # BQ → count  (original case)
     for f in facets:
         v = str(f.get("value") or "").strip()
-        if v:
+        if v and v.lower() not in _IGNORED_PUBLISHERS:
             facets_map[v] = int(f.get("count") or 0)
 
     fac_lower: dict[str, str] = {k.lower(): k for k in facets_map}   # lowercase → orig
@@ -506,7 +512,7 @@ def merge(
         if r["matchStage"]:
             continue
         pub = r["_pub_norm"]
-        if pub and pub in fac_lower:
+        if pub and pub not in _IGNORED_PUBLISHERS and pub in fac_lower:
             assign(r, fac_lower[pub], 2, "publisher_combined")
 
     # ── Stufe 2b: Spider-Titel ────────────────────────────────────────────
@@ -721,9 +727,9 @@ def _richness(r: dict) -> tuple:
     Höherer Wert = besser. Vergleich über Tuple-Reihenfolge.
 
     Priorität:
-      1. publisher_match  – Nodes eigenes oeh_publisher_combined == Bezugsquelle
-      2. is_whitelist     – Whitelist-Eintrag aus Korrekturtabelle: verifizierter
+      1. is_whitelist     – Whitelist-Eintrag aus Korrekturtabelle: verifizierter
                             Datensatz mit explizitem Vorrang (Liste=whitelist)
+      2. publisher_match  – Nodes eigenes oeh_publisher_combined == Bezugsquelle
       3. is_spider        – Spider-/Crawler-Quellen haben technischen Vorrang:
                             Sie sind direkt mit einem aktiven Crawler verbunden,
                             damit fast immer korrekt und Duplikaten vorzuziehen.
@@ -734,8 +740,8 @@ def _richness(r: dict) -> tuple:
       8. has_desc         – Beschreibung vorhanden
       9. filled           – Anzahl gefüllter Felder (Vollständigkeit)
     """
+    is_whitelist = 1 if r.get("_whitelisted") else 0  # Whitelist hat höchste Priorität
     pub_match    = 1 if _norm(r.get("publisher") or "") == _norm(r.get("name") or "") and r.get("name") else 0
-    is_whitelist = 1 if r.get("_whitelisted") else 0  # Whitelist-Eintrag: verifizierter Vorrang
     is_spider    = 1 if r.get("isSpider") else 0      # Spider-Quellen haben technischen Vorrang
     stage        = r.get("matchStage") or 9
     stage_score  = -stage                              # -2 > -5 → Stufe 2 > Stufe 5
@@ -747,7 +753,7 @@ def _richness(r: dict) -> tuple:
         1 for v in r.values()
         if v is not None and v != "" and v != [] and v is not False
     )
-    return (pub_match, is_whitelist, is_spider, stage_score, has_node, date_str, has_preview, has_desc, filled)
+    return (is_whitelist, pub_match, is_spider, stage_score, has_node, date_str, has_preview, has_desc, filled)
 
 
 def assign_primary(merged: list[dict]) -> tuple[list[dict], int]:

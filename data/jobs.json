@@ -1312,34 +1312,239 @@
         "at": "2026-03-27T09:47:22.554077+00:00"
       }
     ],
+    "resultSummary": {}
+  },
+  "52ba05ef-061d-4659-8fc7-0aaee50dcf3f": {
+    "id": "52ba05ef-061d-4659-8fc7-0aaee50dcf3f",
+    "status": "done",
+    "statusLabel": "Fertig",
+    "message": "Fertig",
+    "progress": {
+      "fetched": 1334,
+      "total": 1334
+    },
+    "elapsedSeconds": 578.0,
+    "created": "2026-03-28T11:12:54.940479+00:00",
+    "updated": "2026-03-28T11:22:32.907419+00:00",
+    "error": null,
+    "steps": [
+      {
+        "status": "fetching_quellen",
+        "label": "Quelldatensätze werden abgerufen …",
+        "message": "Rufe Quelldatensätze ab …",
+        "at": "2026-03-28T11:12:54.950483+00:00"
+      },
+      {
+        "status": "fetching_facets",
+        "label": "Bezugsquellen-Facetten werden abgerufen …",
+        "message": "Rufe Bezugsquellen-Facetten ab …",
+        "at": "2026-03-28T11:13:34.873602+00:00"
+      },
+      {
+        "status": "merging",
+        "label": "Daten werden zusammengeführt …",
+        "message": "Entferne API-Artefakt-Dubletten (gleiche nodeId) …",
+        "at": "2026-03-28T11:13:35.570803+00:00"
+      },
+      {
+        "status": "enriching",
+        "label": "enriching",
+        "message": "Reichere Top-Quellen mit Metadaten an …",
+        "at": "2026-03-28T11:19:48.679536+00:00"
+      },
+      {
+        "status": "merging",
+        "label": "Daten werden zusammengeführt …",
+        "message": "Primär-Markierung läuft …",
+        "at": "2026-03-28T11:22:32.498899+00:00"
+      },
+      {
+        "status": "done",
+        "label": "Fertig",
+        "message": "Fertig",
+        "at": "2026-03-28T11:22:32.907419+00:00"
+      }
+    ],
+    "resultSummary": {}
+  },
+  "73bf37c2-73dc-4c3d-97f6-e70e219bd8e2": {
+    "id": "73bf37c2-73dc-4c3d-97f6-e70e219bd8e2",
+    "status": "done",
+    "statusLabel": "Fertig",
+    "message": "Fertig",
+    "progress": {
+      "fetched": 1334,
+      "total": 1334
+    },
+    "elapsedSeconds": 421.7,
+    "created": "2026-03-28T11:34:55.998844+00:00",
+    "updated": "2026-03-28T11:41:57.698665+00:00",
+    "error": null,
+    "steps": [
+      {
+        "status": "fetching_quellen",
+        "label": "Quelldatensätze werden abgerufen …",
+        "message": "Rufe Quelldatensätze ab …",
+        "at": "2026-03-28T11:34:56.001552+00:00"
+      },
+      {
+        "status": "fetching_facets",
+        "label": "Bezugsquellen-Facetten werden abgerufen …",
+        "message": "Rufe Bezugsquellen-Facetten ab …",
+        "at": "2026-03-28T11:35:34.366596+00:00"
+      },
+      {
+        "status": "merging",
+        "label": "Daten werden zusammengeführt …",
+        "message": "Entferne API-Artefakt-Dubletten (gleiche nodeId) …",
+        "at": "2026-03-28T11:35:35.068665+00:00"
+      },
+      {
+        "status": "done",
+        "label": "Fertig",
+        "message": "Fertig",
+        "at": "2026-03-28T11:41:57.698665+00:00"
+      }
+    ],
+    "resultSummary": {}
+  },
+  "e53b648f-3634-4d96-b647-c7ac4b9abf9a": {
+    "id": "e53b648f-3634-4d96-b647-c7ac4b9abf9a",
+    "status": "error",
+    "statusLabel": "Fehler",
+    "message": "Rufe WLO-Metadaten für 248 Whitelist-Einträge ab …",
+    "progress": {
+      "fetched": 1334,
+      "total": 1334
+    },
+    "elapsedSeconds": 1580.5,
+    "created": "2026-03-28T12:07:21.358346+00:00",
+    "updated": "2026-03-28T12:33:41.833548+00:00",
+    "error": "Server-Neustart während des Jobs",
+    "steps": [
+      {
+        "status": "fetching_quellen",
+        "label": "Quelldatensätze werden abgerufen …",
+        "message": "Rufe Quelldatensätze ab …",
+        "at": "2026-03-28T12:07:21.362061+00:00"
+      },
+      {
+        "status": "fetching_facets",
+        "label": "Bezugsquellen-Facetten werden abgerufen …",
+        "message": "Rufe Bezugsquellen-Facetten ab …",
+        "at": "2026-03-28T12:08:00.952672+00:00"
+      },
+      {
+        "status": "merging",
+        "label": "Daten werden zusammengeführt …",
+        "message": "Entferne API-Artefakt-Dubletten (gleiche nodeId) …",
+        "at": "2026-03-28T12:08:01.629567+00:00"
+      }
+    ],
+    "resultSummary": {}
+  },
+  "cab3c454-9281-4c92-ba81-ad6de7e596eb": {
+    "id": "cab3c454-9281-4c92-ba81-ad6de7e596eb",
+    "status": "done",
+    "statusLabel": "Fertig",
+    "message": "Fertig",
+    "progress": {
+      "fetched": 1334,
+      "total": 1334
+    },
+    "elapsedSeconds": 492.1,
+    "created": "2026-03-28T12:43:00.349975+00:00",
+    "updated": "2026-03-28T12:51:12.421205+00:00",
+    "error": null,
+    "steps": [
+      {
+        "status": "fetching_quellen",
+        "label": "Quelldatensätze werden abgerufen …",
+        "message": "Rufe Quelldatensätze ab …",
+        "at": "2026-03-28T12:43:00.353794+00:00"
+      },
+      {
+        "status": "fetching_facets",
+        "label": "Bezugsquellen-Facetten werden abgerufen …",
+        "message": "Rufe Bezugsquellen-Facetten ab …",
+        "at": "2026-03-28T12:43:30.334174+00:00"
+      },
+      {
+        "status": "merging",
+        "label": "Daten werden zusammengeführt …",
+        "message": "Entferne API-Artefakt-Dubletten (gleiche nodeId) …",
+        "at": "2026-03-28T12:43:31.047582+00:00"
+      },
+      {
+        "status": "done",
+        "label": "Fertig",
+        "message": "Fertig",
+        "at": "2026-03-28T12:51:12.421205+00:00"
+      }
+    ],
     "resultSummary": {
-      "total": 3960,
-      "primaryRecords": 3350,
-      "secondaryRecords": 610,
-      "withNodeId": 1070,
-      "facetsOnly": 2890,
-      "nodeDuplicatesRemoved": 258,
-      "blacklistRemoved": 56,
+      "total": 4048,
+      "primaryRecords": 3358,
+      "secondaryRecords": 690,
+      "withNodeId": 1289,
+      "facetsOnly": 2759,
+      "nodeDuplicatesRemoved": 0,
+      "blacklistRemoved": 72,
       "matchReport": {
-        "total": 3960,
-        "primaryRecords": 3350,
-        "secondaryRecords": 610,
-        "withNodeId": 1070,
-        "facetsOnly": 2890,
+        "total": 4048,
+        "primaryRecords": 3358,
+        "secondaryRecords": 690,
+        "withNodeId": 1289,
+        "facetsOnly": 2759,
         "unmatched": 0,
         "byStage": {
-          "2": 696,
-          "5": 274,
-          "1": 96,
+          "5": 450,
+          "2": 734,
+          "1": 101,
           "3": 4,
-          "7": 2890
+          "7": 2759
         },
         "byConfidence": {
-          "HIGH": 3713,
-          "MEDIUM": 247
+          "MEDIUM": 404,
+          "HIGH": 3644
         }
       },
-      "generated": "2026-03-27T09:47:22.554077+00:00"
+      "generated": "2026-03-28T12:51:12.421205+00:00"
     }
+  },
+  "440722bc-dc27-48e4-a0d6-66584a1897ba": {
+    "id": "440722bc-dc27-48e4-a0d6-66584a1897ba",
+    "status": "merging",
+    "statusLabel": "Daten werden zusammengeführt …",
+    "message": "Führe Daten zusammen …",
+    "progress": {
+      "fetched": 1334,
+      "total": 1334
+    },
+    "elapsedSeconds": 199.9,
+    "created": "2026-03-28T14:07:28.893925+00:00",
+    "updated": "2026-03-28T14:10:48.831485+00:00",
+    "error": null,
+    "steps": [
+      {
+        "status": "fetching_quellen",
+        "label": "Quelldatensätze werden abgerufen …",
+        "message": "Rufe Quelldatensätze ab …",
+        "at": "2026-03-28T14:07:28.899545+00:00"
+      },
+      {
+        "status": "fetching_facets",
+        "label": "Bezugsquellen-Facetten werden abgerufen …",
+        "message": "Rufe Bezugsquellen-Facetten ab …",
+        "at": "2026-03-28T14:07:58.569093+00:00"
+      },
+      {
+        "status": "merging",
+        "label": "Daten werden zusammengeführt …",
+        "message": "Entferne API-Artefakt-Dubletten (gleiche nodeId) …",
+        "at": "2026-03-28T14:07:59.302092+00:00"
+      }
+    ],
+    "resultSummary": {}
   }
 }

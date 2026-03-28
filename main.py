@@ -32,7 +32,7 @@ import os
 from pathlib import Path
 
 import requests as http_requests
-from fastapi import FastAPI, File, HTTPException, Query, Request, UploadFile
+from fastapi import Depends, FastAPI, File, Header, HTTPException, Query, Request, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse, Response, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -43,6 +43,34 @@ import merger as merger_mod
 logging.basicConfig(level=logging.INFO,
                     format="%(asctime)s %(levelname)s %(name)s: %(message)s")
 log = logging.getLogger(__name__)
+
+# ---------------------------------------------------------------------------
+# Optionaler API-Key-Schutz
+# ---------------------------------------------------------------------------
+
+_API_KEY = os.environ.get("WLO_API_KEY", "").strip()
+
+if _API_KEY:
+    log.info("API-Key-Schutz aktiv (WLO_API_KEY gesetzt, %d Zeichen)", len(_API_KEY))
+else:
+    log.info("Kein API-Key-Schutz (WLO_API_KEY nicht gesetzt) – alle Endpoints offen.")
+
+
+def _require_api_key(
+    x_api_key: str | None = Header(None, alias="X-API-Key"),
+    api_key:   str | None = Query(None, alias="api_key", include_in_schema=False),
+) -> None:
+    """
+    FastAPI-Dependency: Prüft den API-Key, sofern `WLO_API_KEY` gesetzt ist.
+    Akzeptiert den Key als `X-API-Key`-Header **oder** `?api_key=…` Query-Param.
+    Ist `WLO_API_KEY` nicht gesetzt, wird kein Key verlangt.
+    """
+    if not _API_KEY:
+        return  # kein Schutz konfiguriert
+    token = (x_api_key or api_key or "").strip()
+    if token != _API_KEY:
+        raise HTTPException(status_code=403, detail="Ungültiger oder fehlender API-Key.")
+
 
 # ---------------------------------------------------------------------------
 # App
@@ -66,6 +94,24 @@ sodass sie per `<script>`-Tag in beliebige Webseiten eingebettet werden kann.
 4. **`GET /data/stats`** – Statistiken für UI-Charts
 5. **`GET /data/export/csv`** – Gesamtexport für Offline-Analyse
 6. **`GET /wc/info`** – Einbettungs-Infos für die Webkomponente
+
+### Authentifizierung (optional)
+
+Schreibende Endpoints (`POST /jobs/refresh`, `POST /correction-list`) können
+über einen API-Key geschützt werden. Dazu die Umgebungsvariable **`WLO_API_KEY`**
+setzen. Ist sie **nicht** gesetzt, sind alle Endpoints frei zugänglich.
+
+Den Key bei Anfragen als **Header** oder **Query-Parameter** mitgeben:
+
+```
+X-API-Key: mein-geheimer-schluessel
+```
+oder
+```
+POST /jobs/refresh?api_key=mein-geheimer-schluessel
+```
+
+Lesende Endpoints (`GET /data/sources`, `/wc/*`, etc.) sind **immer öffentlich**.
 
 ### Datenquellen
 
@@ -251,6 +297,7 @@ WC_FIELDS = [
     "matchConfidence",
     "isPrimary",
     "qualityFlags",
+    "editorialStatus",   # Quellenerschließungsstatus (0-9)
     "created",
     "modified",
 ]
@@ -299,6 +346,7 @@ def _build_csv(records: list[dict], skip: int, limit: int,
     response_description="Job-ID und Status (bei sync=true: Endergebnis)",
 )
 def start_refresh(
+    _auth: None = Depends(_require_api_key),
     sync: bool = Query(
         False,
         description=(
@@ -602,6 +650,7 @@ _SLIM_FIELDS = {
     "bezugsquellen",
     "oer", "isSpider", "subjects", "educationalContext", "oehLrt", "license",
     "matchStage", "matchConfidence", "isPrimary", "qualityFlags",
+    "editorialStatus",  # Quellenerschließungsstatus (0-9)
     # Basis-Qualitätskriterien (Kachel-Icons)
     "loginRaw", "adsRaw", "priceRaw", "gdprRaw", "accessRaw",
     # Rechtliche Qualität (für Detail-View und kompakte Anzeige)
@@ -642,8 +691,8 @@ def _apply_filters(
     q_low = q.lower().strip() if q else None
 
     for r in records:
-        # min_count
-        if (r.get("contentCount") or 0) < min_count:
+        # min_count – unmatched Quelldatensätze (matchStage=None) sind davon ausgenommen
+        if min_count and r.get("matchStage") is not None and (r.get("contentCount") or 0) < min_count:
             continue
         # has_node
         if has_node is True and not r.get("nodeId"):
@@ -791,15 +840,20 @@ def get_sources(
 
     filtered = _apply_filters(records, q, subject, level, oer, spider, has_node, min_count)
 
-    # Sortierung
+    # Sortierung – unmatched Records (matchStage=None) immer ans Ende
     reverse = (order.lower() != "asc")
     try:
         filtered.sort(
-            key=lambda r: (r.get(sort) or 0) if isinstance(r.get(sort), (int, float)) else str(r.get(sort) or "").lower(),
+            key=lambda r: (
+                0 if r.get("matchStage") is not None else 1,   # matched zuerst
+                (r.get(sort) or 0) if isinstance(r.get(sort), (int, float)) else str(r.get(sort) or "").lower(),
+            ),
             reverse=reverse,
         )
     except Exception:
         pass  # ungültiges Sortierfeld → keine Sortierung
+    # Sicherheitsnetz: unmatched immer hinten, unabhängig von reverse
+    filtered.sort(key=lambda r: 0 if r.get("matchStage") is not None else 1)
 
     total = len(filtered)
     pages = max(1, (total + page_size - 1) // page_size)
@@ -1028,7 +1082,10 @@ def download_correction_list():
     tags=["Korrekturtabelle"],
     response_description="Anzahl gespeicherter Zeilen",
 )
-async def upload_correction_list(file: UploadFile = File(..., description="CSV-Datei (Komma oder Semikolon, UTF-8 oder UTF-8 BOM)")):
+async def upload_correction_list(
+    _auth: None = Depends(_require_api_key),
+    file: UploadFile = File(..., description="CSV-Datei (Komma oder Semikolon, UTF-8 oder UTF-8 BOM)"),
+):
     """
     **Ersetzt** die aktuelle Korrekturtabelle vollständig.
 

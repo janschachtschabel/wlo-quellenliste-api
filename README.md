@@ -54,9 +54,57 @@ Der Job läuft im Hintergrund (2–5 Min). Fortschritt prüfen:
 curl http://localhost:8080/jobs/latest
 ```
 
+### API-Key-Schutz (optional)
+
+Schreibende Endpoints (`POST /jobs/refresh`, `POST /correction-list`) können
+über einen API-Key geschützt werden. Dazu die Umgebungsvariable `WLO_API_KEY`
+setzen:
+
+```bash
+# Lokal (Linux/macOS)
+export WLO_API_KEY="mein-geheimer-schluessel"
+uvicorn main:app --host 0.0.0.0 --port 8080
+
+# Lokal (Windows PowerShell)
+$env:WLO_API_KEY = "mein-geheimer-schluessel"
+python -m uvicorn main:app --host 0.0.0.0 --port 8080
+
+# Docker
+docker run -p 8080:8080 -e WLO_API_KEY="mein-geheimer-schluessel" wlo-quellenliste
+
+# Docker Compose (in docker-compose.yml unter environment:)
+environment:
+  - WLO_API_KEY=mein-geheimer-schluessel
+```
+
+**Vercel:** In den Vercel-Projekteinstellungen unter *Settings → Environment Variables*
+die Variable `WLO_API_KEY` anlegen.
+
+Den Key bei Anfragen als **Header** oder **Query-Parameter** mitgeben:
+
+```bash
+# Per Header (empfohlen)
+curl -X POST -H "X-API-Key: mein-geheimer-schluessel" http://localhost:8080/jobs/refresh
+
+# Per Query-Parameter
+curl -X POST "http://localhost:8080/jobs/refresh?api_key=mein-geheimer-schluessel"
+```
+
+> **Ist `WLO_API_KEY` nicht gesetzt, sind alle Endpoints frei zugänglich (wie bisher).**
+> Lesende Endpoints (`GET /data/sources`, `/wc/*`, etc.) sind immer öffentlich.
+
 ---
 
-## 2. Vercel-Deployment
+## 2. Umgebungsvariablen
+
+| Variable | Pflicht | Beschreibung |
+|----------|---------|-------------|
+| `WLO_API_KEY` | nein | API-Key für schreibende Endpoints. Wenn leer/fehlend: kein Schutz. |
+| `VERCEL` | auto | Wird von Vercel automatisch gesetzt. Erzwingt synchrone Job-Ausführung. |
+
+---
+
+## 3. Vercel-Deployment
 
 ```bash
 npm i -g vercel    # einmalig
@@ -84,7 +132,7 @@ Die `vercel.json` routet:
 
 ---
 
-## 3. Integrierte Webkomponente
+## 4. Integrierte Webkomponente
 
 Die API liefert unter `/wc/` eine **vorkompilierte Angular-Webkomponente** aus,
 die aus dem Projekt `wlosources-ng` gebaut wird. Sie besteht aus drei Dateien:
@@ -165,7 +213,7 @@ Danach API neu deployen (`vercel --prod`).
 
 ---
 
-## 4. API-Endpunkte
+## 5. API-Endpunkte
 
 Vollständige interaktive Dokumentation: **[/docs](https://wlo-quellenliste-api.vercel.app/docs)**
 
@@ -238,7 +286,7 @@ GET /data/sources?subject=Geschichte&level=Sekundarstufe&fields=name,nodeId,cont
 
 ---
 
-## 5. Projektstruktur
+## 6. Projektstruktur
 
 ```
 wlosearchlistapi/
@@ -267,7 +315,7 @@ wlosearchlistapi/
 
 ---
 
-## 6. Matching-Kaskade
+## 7. Matching-Kaskade
 
 | Stufe | Methode | Treffer (typisch) |
 |-------|---------|-------------------|

@@ -300,14 +300,9 @@ def _run_job(job: Job) -> None:
         job.update("merging", "Führe Daten zusammen …")
         merged_raw, blacklist_removed = merger.merge(quellen_deduped, facets, corrections)
 
-        # ── Stufe 3d: Metadaten-Anreicherung für Top-Facets-only ────────
-        job.update("enriching", "Reichere Top-Quellen mit Metadaten an …")
-        fetcher.enrich_facets_only(
-            merged_raw, min_count=5, max_enrich=500,
-            progress_cb=lambda done, total: job.update(
-                "enriching", f"Metadaten: {done}/{total} …"
-            ),
-        )
+        # ── Stufe 3d: (entfernt – Enrichment von Content-Nodes für Facets-only
+        #     war fehlerhaft: Metadaten einzelner Inhalte sind nicht repräsentativ
+        #     für eine Bezugsquelle. Nur Quelldatensatz-Metadaten sind zulässig.)
 
         # ── Stufe 3e: Primär-Markierung (alle Records behalten) ──────────
         job.update("merging", "Primär-Markierung läuft …")
