@@ -280,10 +280,29 @@ def _run_job(job: Job) -> None:
                        f"{node_dups} API-Artefakt-Dubletten entfernt "
                        f"({len(quellen_deduped)} verbleibend)")
 
-        # ── Stufe 3b: Korrekturen laden + anreichern ────────────────────────
+        # ── Stufe 3b: Korrekturen laden + Blacklist vorab abziehen ─────────
         corrections_raw = load_corrections()
-        # Nur Whitelist-Einträge mit Node-Id benötigen Metadaten-Abruf;
-        # Blacklist-Einträge werden beim Merge vollständig entfernt
+
+        # Blacklist-NodeIds sofort extrahieren und Quelldatensätze filtern,
+        # BEVOR teure Whitelist-Metadaten abgerufen oder der Merge läuft.
+        bl_nodes = {
+            (r.get("Node-Id") or "").strip()
+            for r in corrections_raw
+            if str(r.get("Liste") or "").strip().lower() == "blacklist"
+            and (r.get("Node-Id") or "").strip()
+        }
+        if bl_nodes:
+            before = len(quellen_deduped)
+            quellen_deduped = [
+                r for r in quellen_deduped
+                if (r.get("nodeId") or "").strip() not in bl_nodes
+            ]
+            bl_removed_early = before - len(quellen_deduped)
+            if bl_removed_early:
+                log.info("Blacklist (vorab): %d Records entfernt (%d verbleibend)",
+                         bl_removed_early, len(quellen_deduped))
+
+        # Nur Whitelist-Einträge mit Node-Id benötigen Metadaten-Abruf
         whitelist_with_id = [
             r for r in corrections_raw
             if (r.get("Node-Id") or "").strip()
@@ -325,7 +344,7 @@ def _run_job(job: Job) -> None:
             "withNodeId":               report["withNodeId"],
             "facetsOnly":               report["facetsOnly"],
             "nodeDuplicatesRemoved":    node_dups,
-            "blacklistRemoved":         blacklist_removed,
+            "blacklistRemoved":         (bl_removed_early if bl_nodes else 0) + blacklist_removed,
             "matchReport":              report,
             "generated":                _now(),
         }

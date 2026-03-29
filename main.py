@@ -28,6 +28,7 @@ import csv
 import io
 import logging
 import os
+import re
 
 from pathlib import Path
 
@@ -121,17 +122,19 @@ Lesende Endpoints (`GET /data/sources`, `/wc/*`, etc.) sind **immer öffentlich*
 | WLO Facets-API | Bezugsquellen + Inhaltsanzahl | ~3.500 |
 | Korrekturtabelle | Manuelle Overrides | variabel |
 
-### Matching-Kaskade (7 Stufen)
+### Matching-Kaskade (6 Stufen + 2 Sub-Stufen)
 
 | Stufe | Methode | Typische Treffer |
 |-------|---------|------------------|
-| 1 | Korrektur-Override (Titel / URL-Domain) | ~45 |
-| 2 | `publisher_combined` exakt | ~980 |
-| 3 | Titel exakt (case-insensitive) | ~35 |
-| 4 | Domain-Match | ~40 |
-| 5 | Combined-Score ≥ 0.75 | ~98 |
-| 6 | Substring | ~20 |
-| 7 | Facets-only (kein Quelldatensatz) | ~2.900 |
+| 1 | Korrektur-Override (NodeId / Titel / URL-Domain) | ~100 |
+| 2 | `publisher_combined` exakt (umlaut-normalisiert) | ~920 |
+| 2b | Spider-Titel (Crawler-Nodes) | in 2 enthalten |
+| 3 | Titel exakt (normalisiert) | ~2 |
+| 4a | Domain-Match | ~0 |
+| 4b | Publisher-Containment (min 5 Zeichen) | in 2 enthalten |
+| 5 | Substring (BQ-Name im Titel, min 5 Zeichen) | ~17 |
+| 5b | Ignored-Publisher Titel (whitespace-frei) | ~3 |
+| 6 | Facets-only (kein Quelldatensatz) | ~2.670 |
 """
 
 app = FastAPI(
@@ -929,7 +932,7 @@ def get_review(
 
     | Typ | Beschreibung |
     |-----|--------------|
-    | `MITTEL_MATCH` | Stufe-5/6-Treffer mit `matchConfidence=MEDIUM` + Top-3-Kandidaten |
+    | `MITTEL_MATCH` | Stufe-5-Treffer mit `matchConfidence=MEDIUM` + Top-3-Kandidaten |
     | `KEIN_MATCH` | Quelldatensätze ohne Facetten-Zuordnung + Top-3-Kandidaten |
     | `DATENQUALITAET` | Einträge mit Qualitäts-Flags (PUB_INKONSISTENT, URL-Dubletten …) |
 
@@ -960,15 +963,25 @@ def get_review(
     review: list[dict] = []
 
     def _top3(r: dict) -> list[dict]:
+        """Einfache Kandidaten-Suche: Domain-Containment + Substring im Titel."""
         dom   = merger_mod._domain(r.get("wwwUrl") or "")
-        title = r.get("title") or ""
-        if not dom and not title:
+        title_low = (r.get("title") or "").lower()
+        if not dom and not title_low:
             return []
-        scores = sorted(
-            [(merger_mod._combined_score(dom, title, bq), bq) for bq in fac_list],
-            reverse=True,
-        )
-        return [{"name": bq, "score": round(s, 3)} for s, bq in scores[:3]]
+        dom_clean = re.sub(r"[\-\.]", "", dom)
+        candidates: list[tuple[int, str]] = []
+        for bq in fac_list:
+            bq_low = bq.lower()
+            bq_clean = re.sub(r"[\s\-/]", "", bq_low)
+            score = 0
+            if len(bq_clean) >= 4 and dom_clean and (bq_clean in dom_clean or dom_clean in bq_clean):
+                score += 2
+            if len(bq_low) >= 5 and bq_low in title_low:
+                score += 3
+            if score > 0:
+                candidates.append((score, bq))
+        candidates.sort(key=lambda x: -x[0])
+        return [{"name": bq, "score": s} for s, bq in candidates[:3]]
 
     def _entry(r: dict, rev_typ: str, with_candidates: bool = False) -> dict:
         e = {

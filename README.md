@@ -1,7 +1,7 @@
 # WLO Quellenverzeichnis API
 
 FastAPI-Backend für das WLO-Quellenverzeichnis. Ruft Quellendaten von der
-WLO-Produktion ab, führt sie über eine 7-stufige Matching-Kaskade zusammen
+WLO-Produktion ab, führt sie über eine 6-stufige Matching-Kaskade zusammen
 und liefert sie als JSON-API aus.
 
 Die API bündelt außerdem die **vorkompilierte `<wlo-sources>` Webkomponente**
@@ -305,7 +305,7 @@ wlosearchlistapi/
 │   └── jobs.json              # Job-Historie (generiert)
 ├── main.py                    # FastAPI-App (alle Routen + StaticFiles)
 ├── jobs.py                    # Job-Management + Hintergrund-Threads
-├── merger.py                  # 7-Stufen Matching-Kaskade
+├── merger.py                  # 6-Stufen Matching-Kaskade
 ├── fetcher.py                 # WLO-API-Abruf (Quelldatensätze + Facetten)
 ├── stats.py                   # Statistik-Berechnung
 ├── vercel.json                # Vercel-Konfiguration (Routing, CORS)
@@ -315,14 +315,108 @@ wlosearchlistapi/
 
 ---
 
-## 7. Matching-Kaskade
+## 7. Daten-Pipeline & Matching-Kaskade
 
-| Stufe | Methode | Treffer (typisch) |
-|-------|---------|-------------------|
-| 1 | Korrektur-Override (CSV) | ~45 |
-| 2 | `publisher_combined` exakt | ~980 |
-| 3 | Titel exakt (case-insensitive) | ~35 |
-| 4 | Domain-Match (URL) | ~40 |
-| 5 | Combined-Score ≥ 0.75 | ~98 |
-| 6 | Substring-Match | ~20 |
-| 7 | Facets-only (kein Quelldatensatz) | ~2.900 |
+### Überblick
+
+Die Pipeline ordnet **Quelldatensätze** (aus der WLO-API, Typ `ccm:io` mit
+`contentType=Quelle`) einer **Bezugsquelle** (Facette aus `ccm:oeh_publisher_combined`)
+zu. Ziel: Jeder Quelldatensatz erhält genau eine Bezugsquelle, sodass die
+Webkomponente sie gruppiert anzeigen kann.
+
+```
+WLO-API ──► Quelldatensätze (~1.300)
+WLO-API ──► Facetten / Bezugsquellen (~3.500)
+CSV     ──► Korrekturtabelle (Whitelist + Blacklist)
+              │
+              ▼
+     ┌─────────────────────────┐
+     │  1. NodeId-Dedup        │  API-Artefakt-Dubletten entfernen
+     │  2. Blacklist-Filter    │  Geblacklistete NodeIds sofort entfernen
+     │  3. Whitelist-Enrichment│  WLO-Metadaten für Whitelist-Einträge abrufen
+     │  4. Matching-Kaskade    │  6 Stufen (s.u.)
+     │  5. Primär-Markierung   │  Bester Record pro Bezugsquelle
+     │  6. Statistik-Berechnung│  Charts, Verteilungen
+     └─────────────────────────┘
+              │
+              ▼
+     quellen_merged.json + quellen_stats.json
+```
+
+### Vorverarbeitung (vor dem Matching)
+
+1. **NodeId-Dedup** — Die WLO-API liefert denselben Node manchmal mehrfach in
+   paginierten Ergebnissen. Pro `nodeId` wird der datenschöpfungsreichste
+   Eintrag behalten.
+
+2. **Blacklist-Filter** — `quellen_korrektur.csv`-Einträge mit `Liste=blacklist`
+   werden sofort aus der Arbeitsliste entfernt, **bevor** teure Whitelist-
+   Metadaten abgerufen oder der Merge gestartet wird. Das reduziert die
+   Arbeitsliste und verhindert, dass bekannte Duplikate den Merge verlangsamen.
+
+3. **Whitelist-Enrichment** — Für Whitelist-Einträge mit `Node-Id` werden
+   Metadaten (Titel, URL, Publisher, …) von der WLO-API nachgeladen und als
+   synthetische Records in die Arbeitsliste eingefügt. Diese werden bevorzugt
+   als primärer Record gesetzt.
+
+### Matching-Kaskade (6 Stufen + 2 Sub-Stufen)
+
+Jeder ungematchte Record durchläuft die Stufen nacheinander. Sobald ein Match
+gefunden wird, wird der Record nicht erneut geprüft. Alle Stufen nutzen
+**ausschließlich exakte String-Operationen** (Dict-Lookups, Containment) —
+kein Fuzzy-Matching, kein `difflib.SequenceMatcher`.
+
+**Text-Normalisierung** (`_norm()`): Lowercase + Unicode-NFD-Dekomposition +
+Combining-Marks entfernen (ü→u, é→e, ñ→n) + Whitespace-Normalisierung. Wird
+konsistent für alle Lookups (Facetten, Publisher, Titel) verwendet.
+
+| Stufe | Methode | matchSource | Confidence | Beschreibung |
+|-------|---------|-------------|------------|--------------|
+| 1 | **Korrektur-Override** | `korrektur_nodeid` / `korrektur_titel` / `korrektur_url` | HIGH | Manuelle Zuordnung per `Node-Id`, Titel oder URL-Domain aus der Korrekturtabelle |
+| 2 | **publisher_combined exakt** | `publisher_combined` | HIGH | `ccm:oeh_publisher_combined` des Records stimmt exakt (umlaut-normalisiert) mit einer Facette überein |
+| 2b | **Spider-Titel** | `spider_titel_exakt` / `spider_titel_fuzzy` | HIGH | Crawler-Nodes: `title` = echter Quellenname, `publisher` = Crawler. Titel wird gegen Facetten abgeglichen (exakt + Containment) |
+| 3 | **Titel exakt** | `titel_exakt` | HIGH | Record-Titel stimmt normalisiert exakt mit einer Facette überein |
+| 4a | **Domain-Match** | `domain_match` | HIGH | Normalisierte URL-Domain des Records stimmt mit einer Facette überein, die selbst wie eine Domain aussieht |
+| 4b | **Publisher-Containment** | `publisher_containment` | HIGH | BQ-Name ist Teilstring des Publishers oder umgekehrt (mind. 5 Zeichen). Längster Match gewinnt. |
+| 5 | **Substring** | `substring` | MEDIUM | BQ-Name ist Teilstring im Titel des Records (mind. 5 Zeichen). Längster Match gewinnt. |
+| 5b | **Ignored-Publisher Titel** | `ignored_pub_title_exact` / `ignored_pub_title_contains` | MEDIUM | Nur für Records mit leerem oder ignoriertem Publisher (z.B. „WirLernenOnline"): Titel wird **whitespace-frei** gegen Facetten verglichen — z.B. „Tüftel Akademie" == „TüftelAkademie". Substring-Variante: min. 10 Zeichen + ≥40 % Titelabdeckung. |
+| 6 | **Facets-only** | `facets_only` | — | Bezugsquellen ohne eigenen Quelldatensatz werden als leere Einträge mit `contentCount` angehängt |
+
+> **Hinweis zu den verbleibenden ~238 ungematchten Records:** Diese haben
+> weder einen verwertbaren Publisher noch einen Titel, der einer bekannten
+> Bezugsquelle entspricht. Es handelt sich überwiegend um einzelne
+> Lerneinheiten (z.B. Spanisch-Grammatik-Übungen) ohne Quellenzuordnung
+> sowie redaktionelle Einträge mit dem Platzhalter-Publisher
+> „WirLernenOnline". Diese können nur über die Korrekturtabelle manuell
+> zugeordnet werden.
+
+### Nachverarbeitung
+
+**Bezugsquellen-Kanonisierung** — Sub-Channels und Schreibvarianten (z.B.
+„Khan Academy" / „Khan Academy Deutsch" / „Khan Academy – Computing") werden
+unter der häufigsten Hauptvariante gruppiert. Die Gruppierung basiert auf
+Präfix-Analyse und Token-Overlap.
+
+**Primär-Markierung** (`isPrimary`) — Pro Bezugsquelle wird der beste Record
+als primär markiert. Priorisierung:
+
+1. **Whitelist-Records** haben immer Vorrang
+2. Bei gleichem Whitelist-Status: höchster **Richness-Score** (gewichtet
+   Beschreibung, URL, Fächer, Lizenz, Vorschaubild)
+3. Bei unterschiedlichen URLs → Domain-Suffix-Disambiguierung (beide primär)
+
+**Qualitäts-Flags** — Jeder Record erhält optional Flags wie
+`PUB_INKONSISTENT` (Publisher ≠ zugeordnete BQ), `URL_DOPPELT`
+(gleiche Domain bei verschiedenen BQs) oder `KEIN_VORSCHAU` (fehlende
+Preview-URL).
+
+### Korrekturtabelle (`quellen_korrektur.csv`)
+
+| Spalte | Beschreibung |
+|--------|-------------|
+| `Node-Id` | WLO-nodeId → direktes Matching + Metadaten-Abruf |
+| `Titel` | Alternativer Titel (selten genutzt) |
+| `Url` | URL-Domain → Domain-basiertes Matching |
+| `Bezugsquelle` | Ziel-Bezugsquelle für die Zuordnung |
+| `Spider` | `1`/`true` → Quelle als Crawler markieren |
+| `Liste` | `whitelist` (Standard) = bevorzugter Record; `blacklist` = bekanntes Duplikat, wird entfernt |

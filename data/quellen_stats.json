@@ -1,22 +1,22 @@
 {
-  "total": 3358,
+  "total": 3359,
   "totalContents": 312621,
-  "withNodeId": 599,
-  "facetsOnly": 2759,
+  "withNodeId": 690,
+  "facetsOnly": 2669,
   "withContents": 3349,
-  "withoutContents": 9,
+  "withoutContents": 10,
   "erschliessung": {
-    "mitQuelldatensatz": 599,
-    "nurFacets": 2759,
+    "mitQuelldatensatz": 690,
+    "nurFacets": 2669,
     "mitInhalten": 3349,
-    "ohneInhalte": 9,
-    "crawler": 92,
-    "redaktionell": 507
+    "ohneInhalte": 10,
+    "crawler": 89,
+    "redaktionell": 601
   },
   "contentBrackets": [
     {
       "value": "0",
-      "count": 9
+      "count": 10
     },
     {
       "value": "1–4",
@@ -52,245 +52,257 @@
     }
   ],
   "matchingStages": {
-    "5": 47,
-    "2": 487,
+    "none": 1,
+    "2": 618,
     "1": 63,
-    "3": 2,
-    "7": 2759
+    "5": 8,
+    "6": 2669
   },
   "oer": {
-    "count": 151,
-    "percent": 4.5
+    "count": 167,
+    "percent": 5.0
   },
   "licenseDistribution": [
     {
       "value": "COPYRIGHT_FREE",
-      "count": 395
+      "count": 450
     },
     {
       "value": "CC_BY_SA",
-      "count": 63
+      "count": 80
     },
     {
       "value": "CC_BY",
-      "count": 40
+      "count": 44
     },
     {
       "value": "COPYRIGHT_LICENSE",
-      "count": 17
+      "count": 22
     },
     {
       "value": "CC_BY_NC_SA",
-      "count": 14
+      "count": 16
     },
     {
       "value": "CC_BY_NC_ND",
-      "count": 11
-    },
-    {
-      "value": "CUSTOM",
-      "count": 9
+      "count": 14
     },
     {
       "value": "CC_0",
-      "count": 9
+      "count": 10
+    },
+    {
+      "value": "CUSTOM",
+      "count": 8
+    },
+    {
+      "value": "CC_BY_NC",
+      "count": 7
     },
     {
       "value": "PDM",
       "count": 4
     },
     {
-      "value": "CC_BY_NC",
-      "count": 4
+      "value": "CC_BY_ND",
+      "count": 1
     }
   ],
   "accessQuality": {
     "accessRaw": {
-      "known": 112,
-      "okCount": 18,
+      "known": 128,
+      "okCount": 19,
       "average": 2.4
     },
     "priceRaw": {
-      "known": 408,
-      "okCount": 379,
-      "average": 4.8
+      "known": 466,
+      "okCount": 437,
+      "average": 4.9
     },
     "qAdvertisement": {
-      "known": 328,
-      "okCount": 289,
-      "average": 4.6
+      "known": 371,
+      "okCount": 332,
+      "average": 4.7
     },
     "loginRaw": {
-      "known": 402,
-      "okCount": 355,
-      "average": 4.4
+      "known": 457,
+      "okCount": 410,
+      "average": 4.5
     },
     "gdprRaw": {
-      "known": 68,
-      "okCount": 68,
+      "known": 63,
+      "okCount": 63,
       "average": 5.0
     },
     "qBarrier": {
-      "known": 49,
-      "okCount": 3,
+      "known": 57,
+      "okCount": 4,
       "average": 0.5
     }
   },
   "legalQuality": {
     "lawMinors": {
-      "known": 165,
-      "okCount": 165,
+      "known": 188,
+      "okCount": 188,
       "average": 5.0
     },
     "lawPrivacy": {
-      "known": 12,
-      "okCount": 10,
-      "average": 4.4
+      "known": 13,
+      "okCount": 11,
+      "average": 4.5
     },
     "lawPersonal": {
-      "known": 163,
-      "okCount": 163,
+      "known": 186,
+      "okCount": 186,
       "average": 5.0
     },
     "lawCriminal": {
-      "known": 165,
-      "okCount": 165,
+      "known": 188,
+      "okCount": 188,
       "average": 5.0
     },
     "lawCopyright": {
-      "known": 164,
-      "okCount": 164,
+      "known": 187,
+      "okCount": 187,
       "average": 5.0
     }
   },
   "contentQuality": {
     "qCurrentness": {
-      "known": 133,
-      "okCount": 115,
+      "known": 155,
+      "okCount": 135,
       "average": 4.2
     },
     "qNeutralness": {
-      "known": 124,
-      "okCount": 111,
+      "known": 144,
+      "okCount": 130,
       "average": 4.7
     },
     "qLanguage": {
-      "known": 126,
-      "okCount": 107,
+      "known": 147,
+      "okCount": 125,
       "average": 4.5
     },
     "qCorrectness": {
-      "known": 115,
-      "okCount": 115,
+      "known": 133,
+      "okCount": 133,
       "average": 4.2
     },
     "qMedial": {
-      "known": 127,
-      "okCount": 107,
+      "known": 146,
+      "okCount": 124,
       "average": 4.1
     },
     "qTransparent": {
-      "known": 129,
-      "okCount": 69,
+      "known": 152,
+      "okCount": 83,
       "average": 3.8
     },
     "qDidactics": {
-      "known": 126,
-      "okCount": 81,
+      "known": 146,
+      "okCount": 95,
       "average": 3.8
     }
   },
   "topSubjects": [
     {
       "value": "Biologie",
-      "count": 128
+      "count": 145
     },
     {
       "value": "Nachhaltigkeit",
+      "count": 97
+    },
+    {
+      "value": "Chemie",
       "count": 86
     },
     {
       "value": "Allgemein",
-      "count": 82
-    },
-    {
-      "value": "Chemie",
-      "count": 77
+      "count": 86
     },
     {
       "value": "Berufliche Bildung",
-      "count": 59
-    },
-    {
-      "value": "Physik",
-      "count": 51
+      "count": 62
     },
     {
       "value": "Spanisch",
-      "count": 50
+      "count": 56
     },
     {
-      "value": "Deutsch",
-      "count": 48
-    },
-    {
-      "value": "Informatik",
-      "count": 48
-    },
-    {
-      "value": "Mathematik",
-      "count": 45
+      "value": "Physik",
+      "count": 55
     },
     {
       "value": "Geschichte",
-      "count": 44
+      "count": 54
     },
     {
-      "value": "Englisch",
-      "count": 37
+      "value": "Informatik",
+      "count": 53
+    },
+    {
+      "value": "Deutsch",
+      "count": 50
+    },
+    {
+      "value": "Mathematik",
+      "count": 47
     },
     {
       "value": "Deutsch als Zweitsprache",
+      "count": 40
+    },
+    {
+      "value": "Englisch",
       "count": 36
     },
     {
       "value": "Musik",
-      "count": 31
-    },
-    {
-      "value": "Medienbildung",
-      "count": 28
-    },
-    {
-      "value": "Politik",
-      "count": 28
+      "count": 35
     },
     {
       "value": "Zeitgemäße Bildung",
-      "count": 25
+      "count": 34
+    },
+    {
+      "value": "Medienbildung",
+      "count": 30
+    },
+    {
+      "value": "Politik",
+      "count": 27
     },
     {
       "value": "Geografie",
+      "count": 25
+    },
+    {
+      "value": "Kunst",
       "count": 24
     },
     {
       "value": "Wirtschaftskunde",
-      "count": 23
-    },
-    {
-      "value": "Kunst",
-      "count": 22
+      "count": 24
     },
     {
       "value": "Pädagogik",
-      "count": 20
+      "count": 24
     },
     {
-      "value": "Sport",
-      "count": 19
+      "value": "Ethik",
+      "count": 21
     },
     {
       "value": "Philosophie",
+      "count": 21
+    },
+    {
+      "value": "Sport",
+      "count": 20
+    },
+    {
+      "value": "Projektmanagement",
       "count": 19
     },
     {
@@ -298,35 +310,27 @@
       "count": 18
     },
     {
-      "value": "Ethik",
-      "count": 18
+      "value": "Sachunterricht",
+      "count": 17
     },
     {
       "value": "Religion",
       "count": 16
     },
     {
-      "value": "Sachunterricht",
+      "value": "MINT",
       "count": 16
-    },
-    {
-      "value": "Projektmanagement",
-      "count": 15
     },
     {
       "value": "Französisch",
       "count": 15
     },
     {
-      "value": "MINT",
-      "count": 14
+      "value": "Arbeitslehre",
+      "count": 15
     },
     {
       "value": "Sozialpädagogik",
-      "count": 12
-    },
-    {
-      "value": "Gesundheit",
       "count": 12
     },
     {
@@ -334,11 +338,15 @@
       "count": 11
     },
     {
-      "value": "Arbeitslehre",
-      "count": 11
+      "value": "Gesundheit",
+      "count": 10
     },
     {
       "value": "Darstellendes Spiel",
+      "count": 10
+    },
+    {
+      "value": "Türkisch",
       "count": 8
     },
     {
@@ -347,14 +355,6 @@
     },
     {
       "value": "Astronomie",
-      "count": 7
-    },
-    {
-      "value": "Psychologie",
-      "count": 7
-    },
-    {
-      "value": "Türkisch",
       "count": 6
     },
     {
@@ -362,8 +362,12 @@
       "count": 6
     },
     {
-      "value": "Umweltgefährdung, Umweltschutz",
+      "value": "Psychologie",
       "count": 6
+    },
+    {
+      "value": "Umweltgefährdung, Umweltschutz",
+      "count": 5
     },
     {
       "value": "Gesellschaftskunde",
@@ -378,6 +382,10 @@
       "count": 4
     },
     {
+      "value": "Ernährung und Hauswirtschaft",
+      "count": 3
+    },
+    {
       "value": "Alt-Griechisch",
       "count": 3
     },
@@ -390,76 +398,72 @@
       "count": 3
     },
     {
-      "value": "Elektrotechnik",
-      "count": 3
-    },
-    {
       "value": "Sonderpädagogik",
       "count": 3
     },
     {
-      "value": "Mechatronik",
+      "value": "null",
       "count": 2
     }
   ],
   "topEducationalContext": [
     {
       "value": "Sekundarstufe II",
-      "count": 442
+      "count": 502
     },
     {
       "value": "Sekundarstufe I",
-      "count": 419
+      "count": 481
     },
     {
       "value": "Erwachsenenbildung",
-      "count": 221
-    },
-    {
-      "value": "Berufliche Bildung",
-      "count": 206
+      "count": 240
     },
     {
       "value": "Primarstufe",
-      "count": 204
+      "count": 227
+    },
+    {
+      "value": "Berufliche Bildung",
+      "count": 218
     },
     {
       "value": "Hochschule",
-      "count": 148
+      "count": 173
     },
     {
       "value": "Fortbildung",
-      "count": 66
+      "count": 69
     },
     {
       "value": "Elementarbereich",
-      "count": 46
+      "count": 53
     },
     {
       "value": "Schule",
-      "count": 41
+      "count": 42
     },
     {
       "value": "Förderschule",
-      "count": 30
+      "count": 31
     },
     {
       "value": "Fernunterricht",
-      "count": 27
+      "count": 28
     },
     {
       "value": "Informelles Lernen",
-      "count": 11
+      "count": 12
     }
   ],
   "topLanguages": [
     {
       "value": "Deutsch (Deutschland)",
-      "count": 548
+      "count": 631
     },
     {
       "value": "Spanisch",
-      "count": 17
+      "count": 22
     },
     {
       "value": "Englisch",
@@ -473,7 +477,7 @@
   "topLrt": [
     {
       "value": "Quelle",
-      "count": 592
+      "count": 681
     },
     {
       "value": "Tool",
@@ -481,46 +485,42 @@
     },
     {
       "value": "Webseite",
-      "count": 15
+      "count": 19
     },
     {
       "value": "Methoden",
-      "count": 13
-    },
-    {
-      "value": "Bildungsangebot",
-      "count": 12
+      "count": 16
     },
     {
       "value": "Bild",
-      "count": 11
+      "count": 14
+    },
+    {
+      "value": "Bildungsangebot",
+      "count": 13
     },
     {
       "value": "Unterrichtsbaustein/-reihe",
-      "count": 11
+      "count": 13
     },
     {
       "value": "Unterrichtsidee",
-      "count": 9
+      "count": 11
     },
     {
       "value": "Video",
-      "count": 9
-    },
-    {
-      "value": "Audio",
-      "count": 6
+      "count": 11
     },
     {
       "value": "Übungsmaterial",
-      "count": 6
-    },
-    {
-      "value": "Event, Wettbewerb",
-      "count": 6
+      "count": 7
     },
     {
       "value": "Unterrichtsplan",
+      "count": 7
+    },
+    {
+      "value": "Audio",
       "count": 6
     },
     {
@@ -528,27 +528,35 @@
       "count": 6
     },
     {
+      "value": "Event, Wettbewerb",
+      "count": 5
+    },
+    {
       "value": "Kurs",
       "count": 5
+    },
+    {
+      "value": "Noten",
+      "count": 4
+    },
+    {
+      "value": "Interaktives Medium",
+      "count": 4
     },
     {
       "value": "Textbausteine",
       "count": 4
     },
     {
+      "value": "Tests / Fragebögen",
+      "count": 3
+    },
+    {
       "value": "News",
       "count": 3
     },
     {
-      "value": "Interaktives Medium",
-      "count": 3
-    },
-    {
-      "value": "Noten",
-      "count": 2
-    },
-    {
-      "value": "Tests / Fragebögen",
+      "value": "Regelungsintrumente",
       "count": 2
     },
     {
@@ -568,11 +576,11 @@
       "count": 1
     },
     {
-      "value": "Regularien, Handbuch",
+      "value": "Artikel",
       "count": 1
     },
     {
-      "value": "Regelungsintrumente",
+      "value": "Regularien, Handbuch",
       "count": 1
     },
     {
